@@ -1,1 +1,26 @@
+spring:
+  datasource:
+    url:  jdbc:postgresql://localhost:5432/security_demo
+    username: stat_etl_user
+    password: stat_etl_user
+    hikari:
+      maximum-pool-size: 10
+      connection-timeout: 3000
+      connection-test-query: SELECT 1
+      pool-name: mlgelk_statistics
+  security:
+    jwt:
+      secret: SecretKeyToGenJWTs
+      expiration-time: 24 #hours
+      token-prefix: 'Token '
+      header-string: Authorization
+    password:
+      pattern: "^(?=.*[a-z]|[A-Z]|[?-?]|[?-?])(?=.*\\d)[A-Za-z?-??-?\\d-+%().,:;?!*<>@{}$#_/\\[\\]\\\\]{8,}"
+      description: "Пароль должен содержать в себе минимум 8 символов, русские или латинские буквы и цифры"
 
+  #https://stackoverflow.com/questions/4588755/disabling-contextual-lob-creation-as-createclob-method-threw-error
+  jpa:
+    properties:
+      hibernate:
+        temp:
+          use_jdbc_metadata_defaults: false
