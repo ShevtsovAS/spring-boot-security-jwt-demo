@@ -73,7 +73,8 @@ public class UserServiceImpl implements UserService {
         if (passwordValidateService.invalid(newPassword)) {
             throw new IncorrectPasswordException(passwordDescription);
         }
-        user.setPassword(newPassword);
+
+        user.setPassword(bCryptPasswordEncoder.encode(newPassword));
         userRepository.save(user);
     }
 

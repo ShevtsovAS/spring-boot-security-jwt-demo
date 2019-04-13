@@ -125,7 +125,11 @@ public class UserController {
     public ResponseEntity<UserResponse> deleteUser(@PathVariable String username) {
         try {
             userService.delete(username);
-            return ResponseEntity.noContent().build();
+            return ResponseEntity
+                    .status(HttpStatus.NO_CONTENT)
+                    .body(UserResponse.builder()
+                            .success(true)
+                            .build());
         } catch (UsernameNotFoundException e) {
             return badRequestResponse(e);
         } catch (Exception e) {
