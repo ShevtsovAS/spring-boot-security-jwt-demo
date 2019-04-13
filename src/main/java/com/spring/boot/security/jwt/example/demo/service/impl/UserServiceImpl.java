@@ -76,4 +76,28 @@ public class UserServiceImpl implements UserService {
         user.setPassword(newPassword);
         userRepository.save(user);
     }
+
+    @Override
+    public User deactivate(String username) {
+        User user = findUser(username);
+
+        if (!user.getActive()) {
+            return user;
+        }
+
+        user.setActive(false);
+        return userRepository.save(user);
+    }
+
+    @Override
+    public User activate(String username) {
+        User user = findUser(username);
+
+        if (user.getActive()) {
+            return user;
+        }
+
+        user.setActive(true);
+        return userRepository.save(user);
+    }
 }

@@ -86,6 +86,40 @@ public class UserController {
         }
     }
 
+    @PutMapping("/{username}/deactivate")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<UserResponse> deactivateUser(@PathVariable String username) {
+        try {
+            User user = userService.deactivate(username);
+            user.setPassword(null);
+            return ResponseEntity.ok(UserResponse.builder()
+                    .success(true)
+                    .user(user)
+                    .build());
+        } catch (UsernameNotFoundException e) {
+            return badRequestResponse(e);
+        } catch (Exception e) {
+            return errorResponse(e);
+        }
+    }
+
+    @PutMapping("/{username}/activate")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<UserResponse> activateUser(@PathVariable String username) {
+        try {
+            User user = userService.activate(username);
+            user.setPassword(null);
+            return ResponseEntity.ok(UserResponse.builder()
+                    .success(true)
+                    .user(user)
+                    .build());
+        } catch (UsernameNotFoundException e) {
+            return badRequestResponse(e);
+        } catch (Exception e) {
+            return errorResponse(e);
+        }
+    }
+
     @DeleteMapping("/{username}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<UserResponse> deleteUser(@PathVariable String username) {

@@ -15,4 +15,8 @@ public interface UserService {
     User findUser(String username);
 
     void changePassword(String username, String oldPassword, String newPassword);
+
+    User deactivate(String username);
+
+    User activate(String username);
 }
