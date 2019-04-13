@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <property name="DEV_HOME" value="logs"/>
+    <property name="APP_NAME" value="spring-boot-security-jwt-demo"/>
+    <property name="APP_VERSION" value="0.0.1-SNAPSHOT"/>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <charset>UTF-8</charset>
+            <Pattern>
+                %d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n
+            </Pattern>
+        </encoder>
+    </appender>
+
+    <appender name="FILE-AUDIT"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${DEV_HOME}/${APP_NAME}-${APP_VERSION}.log</file>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <charset>UTF-8</charset>
+            <Pattern>
+                %d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n
+            </Pattern>
+        </encoder>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- rollover daily -->
+            <fileNamePattern>${DEV_HOME}/archived/${APP_NAME}-${APP_VERSION}.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>10MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>10</maxHistory>
+        </rollingPolicy>
+
+    </appender>
+
+    <appender name="FILE-ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${DEV_HOME}/${APP_NAME}-${APP_VERSION}-error.log</file>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <charset>UTF-8</charset>
+            <Pattern>
+                %d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n
+            </Pattern>
+        </encoder>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${DEV_HOME}/archived/${APP_NAME}-${APP_VERSION}-error.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>10MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>10</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <logger name="com.spring.boot.security.jwt.example.demo" level="debug" additivity="false">
+        <appender-ref ref="FILE-AUDIT"/>
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+    <logger name="org.springframework.web" level="debug" additivity="false">
+        <appender-ref ref="FILE-AUDIT"/>
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+    <logger name="org.springframework.data" level="debug" additivity="false">
+        <appender-ref ref="FILE-AUDIT"/>
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+    <root level="error">
+        <appender-ref ref="FILE-ERROR"/>
+        <appender-ref ref="STDOUT"/>
+    </root>
+
+</configuration>
