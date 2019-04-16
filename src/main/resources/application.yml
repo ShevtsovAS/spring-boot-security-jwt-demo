@@ -1,8 +1,8 @@
 spring:
   datasource:
     url:  jdbc:postgresql://localhost:5432/security_demo
-    username: stat_etl_user
-    password: stat_etl_user
+    username: postgres
+    password: postgres
     hikari:
       maximum-pool-size: 10
       connection-timeout: 3000
