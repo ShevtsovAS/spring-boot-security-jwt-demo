@@ -5,7 +5,9 @@ import com.spring.boot.security.jwt.example.demo.domain.Role;
 import com.spring.boot.security.jwt.example.demo.domain.User;
 import com.spring.boot.security.jwt.example.demo.model.users.ApplicationUser;
 import com.spring.boot.security.jwt.example.demo.model.users.ChangePasswordRequest;
-import com.spring.boot.security.jwt.example.demo.model.users.UserResponse;
+import com.spring.boot.security.jwt.example.demo.model.users.CreateRoleRequest;
+import com.spring.boot.security.jwt.example.demo.model.users.CreateUserRequest;
+import com.spring.boot.security.jwt.example.demo.repository.RoleRepository;
 import com.spring.boot.security.jwt.example.demo.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Before;
@@ -25,7 +27,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
@@ -50,39 +51,54 @@ public class UserControllerTest {
 
     private static final String TEST_USER_NAME = "testUser";
     private static final String TEST_USER_PASSWORD = "password123";
+    private static final String TEST_USER_ENCODED_PASSWORD = "$2a$10$wschGsPiIyObJxCRRQRMSesPO73pcXVkKB/KoA4QP4WCZ9TKNOALG";
     private static final String TEST_USER_NEW_PASSWORD = "newPassword123";
     private static final String TEST_USER_NEW_ENCODED_PASSWORD = "$2a$10$ziEanFy98/vPGQ3f8ODI8.OS2Ox3/jo6Cc1rJ0P7tMRFnYN8BMsQ6";
-    private static final String TEST_USER_ENCODED_PASSWORD = "$2a$10$wschGsPiIyObJxCRRQRMSesPO73pcXVkKB/KoA4QP4WCZ9TKNOALG";
     private static final String TEST_CREATED_USER_NAME = "createUser";
+    private static final String TEST_CREATED_USER_PASSWORD = "password123";
     private static final String TEST_CREATED_USER_ENCODED_PASSWORD = "$2a$10$fNBKepQgnCkm.MSTbH2RYOwokWCBBYgHZsK4mnkBhIZ2w1.L3iA2.";
+    private static final Role EXISTED_ROLE = new Role(1L, "ROLE_USER");
+    private static final Set<Role> TEST_USER_ROLES = Collections.singleton(EXISTED_ROLE);
 
-    private static final User testUser = User.builder()
+    private static final CreateUserRequest CREATE_USER_REQUEST = CreateUserRequest.builder()
+            .username(TEST_CREATED_USER_NAME)
+            .password(TEST_CREATED_USER_PASSWORD)
+            .roles(Collections.singleton("ROLE_USER"))
+            .build();
+
+    private static final CreateRoleRequest CREATE_ROLE_REQUEST = CreateRoleRequest.builder()
+            .roleName("ROLE_NEW_USER")
+            .build();
+
+    private static final User TEST_USER = User.builder()
             .id(123L)
             .username(TEST_USER_NAME)
             .password(TEST_USER_ENCODED_PASSWORD)
-            .roles(Collections.singleton(Role.USER))
-            .active(true)
+            .roles(TEST_USER_ROLES)
             .build();
 
-    private static final User testUserToSave = new User(TEST_CREATED_USER_NAME, TEST_USER_PASSWORD, Collections.singleton(Role.USER));
+    private static final User TEST_USER_TO_SAVE = new User(TEST_CREATED_USER_NAME, TEST_USER_PASSWORD, TEST_USER_ROLES);
 
-    private static final User testCreatedUser = User.builder()
+    private static final User TEST_CREATED_USER = User.builder()
             .id(124L)
             .username(TEST_CREATED_USER_NAME)
             .password(TEST_CREATED_USER_ENCODED_PASSWORD)
-            .roles(Collections.singleton(Role.USER))
+            .roles(TEST_USER_ROLES)
             .active(true)
             .build();
 
     private static final User testUserToSaveWithEncodedPassword = User.builder()
-            .username(testUserToSave.getUsername())
-            .password(testCreatedUser.getPassword())
-            .roles(testUserToSave.getRoles())
-            .active(testUserToSave.getActive())
+            .username(TEST_USER_TO_SAVE.getUsername())
+            .password(TEST_CREATED_USER.getPassword())
+            .roles(TEST_USER_TO_SAVE.getRoles())
+            .active(TEST_USER_TO_SAVE.getActive())
             .build();
 
     @MockBean
     UserRepository userRepository;
+
+    @MockBean
+    RoleRepository roleRepository;
 
     @SpyBean
     PasswordEncoder bCryptPasswordEncoder;
@@ -102,12 +118,14 @@ public class UserControllerTest {
                 .apply(springSecurity())
                 .build();
 
-        when(bCryptPasswordEncoder.encode(testUserToSave.getPassword())).thenReturn(testCreatedUser.getPassword());
+        when(bCryptPasswordEncoder.encode(TEST_USER_TO_SAVE.getPassword())).thenReturn(TEST_CREATED_USER.getPassword());
         when(bCryptPasswordEncoder.encode(TEST_USER_NEW_PASSWORD)).thenReturn(TEST_USER_NEW_ENCODED_PASSWORD);
-        when(bCryptPasswordEncoder.matches(TEST_USER_PASSWORD, testUser.getPassword())).thenReturn(true);
-        when(userRepository.findByUsername(TEST_USER_NAME)).thenReturn(Optional.of(testUser));
+        when(bCryptPasswordEncoder.matches(TEST_USER_PASSWORD, TEST_USER.getPassword())).thenReturn(true);
+        when(userRepository.findByUsername(TEST_USER_NAME)).thenReturn(Optional.of(TEST_USER));
         when(userRepository.findByUsername(TEST_CREATED_USER_NAME)).thenReturn(Optional.empty());
-        when(userRepository.save(testUserToSaveWithEncodedPassword)).thenReturn(testCreatedUser);
+        when(userRepository.save(testUserToSaveWithEncodedPassword)).thenReturn(TEST_CREATED_USER);
+        when(roleRepository.findAllByNameIn(CREATE_USER_REQUEST.getRoles())).thenReturn(TEST_USER_ROLES);
+        when(roleRepository.findFirstByName(EXISTED_ROLE.getName())).thenReturn(Optional.of(EXISTED_ROLE));
     }
 
     @Test
@@ -160,8 +178,7 @@ public class UserControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(APPLICATION_JSON_UTF8))
                 .andReturn();
-
-        checkResult(result, testUser);
+        checkResult(result, TEST_USER);
     }
 
     @Test
@@ -183,25 +200,26 @@ public class UserControllerTest {
     public void createUser() throws Exception {
         MvcResult result = mvc.perform(post(USERS_API)
                 .contentType(APPLICATION_JSON)
-                .content(mapper.writeValueAsString(testUserToSave)))
+                .content(mapper.writeValueAsString(CREATE_USER_REQUEST)))
                 .andExpect(status().is(HttpStatus.CREATED.value()))
                 .andExpect(content().contentType(APPLICATION_JSON_UTF8))
                 .andReturn();
 
-        checkResult(result, testCreatedUser);
+        checkResult(result, TEST_CREATED_USER);
     }
 
     @Test
     @WithMockUser(authorities = "ROLE_ADMIN")
     public void createUserBadRequest() throws Exception {
-        MvcResult result = mvc.perform(post(USERS_API)
+        CreateUserRequest badCreateUserRequest = CreateUserRequest.builder()
+                .username(TEST_USER_NAME)
+                .password(TEST_USER_PASSWORD)
+                .roles(Collections.singleton("ROLE_USER"))
+                .build();
+        mvc.perform(post(USERS_API)
                 .contentType(APPLICATION_JSON)
-                .content(mapper.writeValueAsString(testUser)))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
-                .andReturn();
-
-        checkResultFailed(result);
+                .content(mapper.writeValueAsString(badCreateUserRequest)))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -209,26 +227,58 @@ public class UserControllerTest {
     public void createUserForbidden() throws Exception {
         mvc.perform(post(USERS_API)
                 .contentType(APPLICATION_JSON)
-                .content(mapper.writeValueAsString(testUser)))
+                .content(mapper.writeValueAsString(CREATE_USER_REQUEST)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(authorities = "ROLE_ADMIN")
+    public void createRole() throws Exception {
+        Role roleToCreate = new Role(CREATE_ROLE_REQUEST.getRoleName());
+        Role createdRole = new Role(123L, roleToCreate.getName());
+        when(roleRepository.save(roleToCreate)).thenReturn(createdRole);
+        mvc.perform(post(USERS_API + "/roles")
+                .contentType(APPLICATION_JSON)
+                .content(mapper.writeValueAsString(CREATE_ROLE_REQUEST)))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    @WithMockUser(authorities = "ROLE_ADMIN")
+    public void createRoleBadRequest() throws Exception {
+        mvc.perform(post(USERS_API + "/roles")
+                .contentType(APPLICATION_JSON)
+                .content(mapper.writeValueAsString(EXISTED_ROLE.getName())))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser(authorities = "ROLE_USER")
+    public void createRoleForbidden() throws Exception {
+        mvc.perform(post(USERS_API + "/roles")
+                .contentType(APPLICATION_JSON)
+                .content(mapper.writeValueAsString(EXISTED_ROLE.getName())))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     @WithMockUser(authorities = "ROLE_ADMIN")
     public void updateUserRoles() throws Exception {
-        Set<Role> roles = Stream.of(Role.USER, Role.ADMIN).collect(toSet());
+        Set<String> newRoleNames = Stream.of("ROLE_USER", "ROLE_ADMIN").collect(toSet());
+        Set<Role> newRoles = Stream.of(new Role(1L, "ROLE_USER"), new Role(2L, "ROLE_ADMIN")).collect(toSet());
+        when(roleRepository.findAllByNameIn(newRoleNames)).thenReturn(newRoles);
         User expectedUser = User.builder()
-                .id(testUser.getId())
-                .username(testUser.getUsername())
-                .password(testUser.getPassword())
-                .active(testUser.getActive())
-                .roles(roles)
+                .id(TEST_USER.getId())
+                .username(TEST_USER.getUsername())
+                .password(TEST_USER.getPassword())
+                .active(TEST_USER.getActive())
+                .roles(newRoles)
                 .build();
 
         when(userRepository.save(expectedUser)).thenReturn(expectedUser);
         MvcResult result = mvc.perform(put(USERS_API + "/" + TEST_USER_NAME + "/roles")
                 .contentType(APPLICATION_JSON)
-                .content(mapper.writeValueAsString(roles)))
+                .content(mapper.writeValueAsString(newRoleNames)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(APPLICATION_JSON_UTF8))
                 .andReturn();
@@ -239,14 +289,10 @@ public class UserControllerTest {
     @Test
     @WithMockUser(authorities = "ROLE_ADMIN")
     public void updateUserRolesBadRequest() throws Exception {
-        MvcResult result = mvc.perform(put(USERS_API + "/notExistUser/roles")
+        mvc.perform(put(USERS_API + "/notExistUser/roles")
                 .contentType(APPLICATION_JSON)
-                .content(mapper.writeValueAsString(Collections.singleton(Role.ADMIN))))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
-                .andReturn();
-
-        checkResultFailed(result);
+                .content(mapper.writeValueAsString(Collections.singleton("ROLE_USER"))))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -254,7 +300,7 @@ public class UserControllerTest {
     public void updateUserRolesForbidden() throws Exception {
         mvc.perform(put(USERS_API + "/notExistUser/roles")
                 .contentType(APPLICATION_JSON)
-                .content(mapper.writeValueAsString(Collections.singleton(Role.ADMIN))))
+                .content(mapper.writeValueAsString(Collections.singleton("ROLE_USER"))))
                 .andExpect(status().isForbidden());
     }
 
@@ -262,11 +308,11 @@ public class UserControllerTest {
     @WithMockUser(authorities = "ROLE_ADMIN")
     public void deactivateUser() throws Exception {
         User expectedUser = User.builder()
-                .id(testUser.getId())
-                .username(testUser.getUsername())
-                .password(testUser.getPassword())
+                .id(TEST_USER.getId())
+                .username(TEST_USER.getUsername())
+                .password(TEST_USER.getPassword())
                 .active(false)
-                .roles(testUser.getRoles())
+                .roles(TEST_USER.getRoles())
                 .build();
 
         when(userRepository.save(expectedUser)).thenReturn(expectedUser);
@@ -282,13 +328,9 @@ public class UserControllerTest {
     @Test
     @WithMockUser(authorities = "ROLE_ADMIN")
     public void deactivateUserBadRequest() throws Exception {
-        MvcResult result = mvc.perform(put(USERS_API + "/notExistUser/deactivate")
+        mvc.perform(put(USERS_API + "/notExistUser/deactivate")
                 .contentType(APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
-                .andReturn();
-
-        checkResultFailed(result);
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -307,19 +349,15 @@ public class UserControllerTest {
                 .andExpect(content().contentType(APPLICATION_JSON_UTF8))
                 .andReturn();
 
-        checkResult(result, testUser);
+        checkResult(result, TEST_USER);
     }
 
     @Test
     @WithMockUser(authorities = "ROLE_ADMIN")
     public void activateUserBadRequest() throws Exception {
-        MvcResult result = mvc.perform(put(USERS_API + "/notExistUser/activate")
+        mvc.perform(put(USERS_API + "/notExistUser/activate")
                 .contentType(APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
-                .andReturn();
-
-        checkResultFailed(result);
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -332,21 +370,15 @@ public class UserControllerTest {
     @Test
     @WithMockUser(authorities = "ROLE_ADMIN")
     public void deleteUser() throws Exception {
-        MvcResult result = mvc.perform(delete(USERS_API + "/" + TEST_USER_NAME))
-                .andExpect(status().is(HttpStatus.NO_CONTENT.value()))
-                .andReturn();
-
-        checkResult(result);
+        mvc.perform(delete(USERS_API + "/" + TEST_USER_NAME))
+                .andExpect(status().is(HttpStatus.NO_CONTENT.value()));
     }
 
     @Test
     @WithMockUser(authorities = "ROLE_ADMIN")
     public void deleteUserBadRequest() throws Exception {
-        MvcResult result = mvc.perform(delete(USERS_API + "/notExistUser"))
-                .andExpect(status().isBadRequest())
-                .andReturn();
-
-        checkResultFailed(result);
+        mvc.perform(delete(USERS_API + "/notExistUser"))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -365,7 +397,7 @@ public class UserControllerTest {
                 .andExpect(content().contentType(APPLICATION_JSON_UTF8))
                 .andReturn();
 
-        checkResult(result, testUser);
+        checkResult(result, TEST_USER);
     }
 
     @Test
@@ -378,11 +410,11 @@ public class UserControllerTest {
     @WithMockUser(TEST_USER_NAME)
     public void changePassword() throws Exception {
         User expectedUser = User.builder()
-                .id(testUser.getId())
-                .username(testUser.getUsername())
+                .id(TEST_USER.getId())
+                .username(TEST_USER.getUsername())
                 .password(TEST_USER_NEW_ENCODED_PASSWORD)
-                .active(testUser.getActive())
-                .roles(testUser.getRoles())
+                .active(TEST_USER.getActive())
+                .roles(TEST_USER.getRoles())
                 .build();
 
         when(userRepository.save(expectedUser)).thenReturn(expectedUser);
@@ -392,14 +424,10 @@ public class UserControllerTest {
                 .newPasswordForCheck(TEST_USER_NEW_PASSWORD)
                 .build();
 
-        MvcResult result = mvc.perform(patch(USERS_API + "/current/change-password")
+        mvc.perform(patch(USERS_API + "/current/change-password")
                 .contentType(APPLICATION_JSON)
                 .content(mapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
-                .andReturn();
-
-        checkResult(result);
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -411,14 +439,10 @@ public class UserControllerTest {
                 .newPasswordForCheck(TEST_USER_NEW_PASSWORD)
                 .build();
 
-        MvcResult result = mvc.perform(patch(USERS_API + "/current/change-password")
+        mvc.perform(patch(USERS_API + "/current/change-password")
                 .contentType(APPLICATION_JSON)
                 .content(mapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
-                .andReturn();
-
-        checkResultFailed(result);
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -430,14 +454,10 @@ public class UserControllerTest {
                 .newPasswordForCheck("12345")
                 .build();
 
-        MvcResult result = mvc.perform(patch(USERS_API + "/current/change-password")
+        mvc.perform(patch(USERS_API + "/current/change-password")
                 .contentType(APPLICATION_JSON)
                 .content(mapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
-                .andReturn();
-
-        checkResultFailed(result);
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -454,36 +474,15 @@ public class UserControllerTest {
                 .andExpect(status().isForbidden());
     }
 
-    private void checkResult(MvcResult result) throws Exception {
-        checkResult(result, null);
-    }
-
     private void checkResult(MvcResult result, User expectedUser) throws Exception {
         String content = result.getResponse().getContentAsString();
-        UserResponse response = mapper.readValue(content, UserResponse.class);
+        User user = mapper.readValue(content, User.class);
 
-        assertNotNull(response);
-        assertNull(response.getError());
-        assertTrue(response.isSuccess());
-
-        if (expectedUser != null) {
-            assertNotNull(response.getUser());
-            User userFromResponse = response.getUser();
-
-            assertNotNull(userFromResponse.getId());
-            assertNull(userFromResponse.getPassword());
-            assertThat(userFromResponse.getActive(), is(expectedUser.getActive()));
-            assertThat(userFromResponse.getUsername(), is(expectedUser.getUsername()));
-            assertEquals(userFromResponse.getRoles(), expectedUser.getRoles());
-        }
-    }
-
-    private void checkResultFailed(MvcResult result) throws IOException {
-        String content = result.getResponse().getContentAsString();
-        UserResponse response = mapper.readValue(content, UserResponse.class);
-
-        assertNotNull(response);
-        assertNotNull(response.getError());
-        assertFalse(response.isSuccess());
+        assertNotNull(user);
+        assertNotNull(user.getId());
+        assertNull(user.getPassword());
+        assertThat(user.getActive(), is(expectedUser.getActive()));
+        assertThat(user.getUsername(), is(expectedUser.getUsername()));
+        assertEquals(user.getRoles(), expectedUser.getRoles());
     }
 }

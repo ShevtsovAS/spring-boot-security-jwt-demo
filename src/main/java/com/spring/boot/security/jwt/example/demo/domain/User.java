@@ -5,13 +5,14 @@ import com.spring.boot.security.jwt.example.demo.model.AbstractBaseEntity;
 import lombok.*;
 
 import javax.persistence.*;
+import java.util.HashSet;
 import java.util.Set;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "app_user")
+@Table(name = "app_users")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
@@ -20,10 +21,11 @@ public class User extends AbstractBaseEntity<Long> {
     private String password;
     private Boolean active = true;
 
-    @ElementCollection(targetClass = Role.class, fetch = FetchType.EAGER)
-    @CollectionTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"))
-    @Enumerated(EnumType.STRING)
-    private Set<Role> roles;
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"))
+    private Set<Role> roles = new HashSet<>();
 
     public User(String username, String password, Set<Role> roles) {
         this.username = username;
@@ -36,7 +38,7 @@ public class User extends AbstractBaseEntity<Long> {
         super(id);
         this.username = username;
         this.password = password;
-        this.active = active;
+        this.active = active != null ? active : true;
         this.roles = roles;
     }
 }

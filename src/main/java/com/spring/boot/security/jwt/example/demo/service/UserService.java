@@ -2,13 +2,15 @@ package com.spring.boot.security.jwt.example.demo.service;
 
 import com.spring.boot.security.jwt.example.demo.domain.Role;
 import com.spring.boot.security.jwt.example.demo.domain.User;
+import com.spring.boot.security.jwt.example.demo.model.users.CreateRoleRequest;
+import com.spring.boot.security.jwt.example.demo.model.users.CreateUserRequest;
 
 import java.util.Set;
 
 public interface UserService {
-    User create(User user);
+    User create(CreateUserRequest request);
 
-    User updateUserRoles(String username, Set<Role> roles);
+    User updateUserRoles(String username, Set<String> roleNames);
 
     void delete(String username);
 
@@ -19,4 +21,6 @@ public interface UserService {
     User deactivate(String username);
 
     User activate(String username);
+
+    Role createRole(CreateRoleRequest request);
 }

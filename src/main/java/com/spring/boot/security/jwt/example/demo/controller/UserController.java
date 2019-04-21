@@ -2,10 +2,7 @@ package com.spring.boot.security.jwt.example.demo.controller;
 
 import com.spring.boot.security.jwt.example.demo.domain.Role;
 import com.spring.boot.security.jwt.example.demo.domain.User;
-import com.spring.boot.security.jwt.example.demo.model.users.ChangePasswordRequest;
-import com.spring.boot.security.jwt.example.demo.model.users.IncorrectPasswordException;
-import com.spring.boot.security.jwt.example.demo.model.users.UserExistsException;
-import com.spring.boot.security.jwt.example.demo.model.users.UserResponse;
+import com.spring.boot.security.jwt.example.demo.model.users.*;
 import com.spring.boot.security.jwt.example.demo.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +14,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Set;
 
@@ -34,168 +32,110 @@ public class UserController {
 
     @GetMapping("/{username}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<UserResponse> findUser(@PathVariable String username) {
+    public ResponseEntity<User> findUser(@PathVariable String username) {
         try {
             User user = userService.findUser(username);
             user.setPassword(null);
-            return ResponseEntity.ok(UserResponse.builder()
-                    .success(true)
-                    .user(user)
-                    .build());
+            return ResponseEntity.ok(user);
         } catch (UsernameNotFoundException e) {
-            return notFoundResponse(e);
-        } catch (Exception e) {
-            return errorResponse(e);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage(), e);
+        }
+    }
+
+    @PostMapping("/roles")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<Role> createRole(@RequestBody CreateRoleRequest request) {
+        try {
+            Role role = userService.createRole(request);
+            return ResponseEntity.status(HttpStatus.CREATED).body(role);
+        } catch (RoleExistsException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
         }
     }
 
     @PostMapping
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<UserResponse> createUser(@RequestBody User user) {
+    public ResponseEntity<User> createUser(@RequestBody CreateUserRequest request) {
         try {
-            User created = userService.create(user);
+            User created = userService.create(request);
             created.setPassword(null);
-            return ResponseEntity
-                    .status(HttpStatus.CREATED)
-                    .body(UserResponse.builder()
-                            .success(true)
-                            .user(created)
-                            .build());
-        } catch (UserExistsException | IncorrectPasswordException e) {
-            return badRequestResponse(e);
-        } catch (Exception e) {
-            return errorResponse(e);
+            return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        } catch (UserExistsException | IncorrectPasswordException | RoleNotFoundException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
         }
     }
 
     @PutMapping("/{username}/roles")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<UserResponse> updateUserRoles(@PathVariable String username,
-                                                        @RequestBody Set<Role> roles) {
+    public ResponseEntity<User> updateUserRoles(@PathVariable String username,
+                                                @RequestBody Set<String> roleNames) {
         try {
-            User user = userService.updateUserRoles(username, roles);
+            User user = userService.updateUserRoles(username, roleNames);
             user.setPassword(null);
-            return ResponseEntity.ok(UserResponse.builder()
-                    .success(true)
-                    .user(user)
-                    .build());
-        } catch (UsernameNotFoundException e) {
-            return badRequestResponse(e);
-        } catch (Exception e) {
-            return errorResponse(e);
+            return ResponseEntity.ok(user);
+        } catch (UsernameNotFoundException | RoleNotFoundException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
         }
     }
 
     @PutMapping("/{username}/deactivate")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<UserResponse> deactivateUser(@PathVariable String username) {
+    public ResponseEntity<User> deactivateUser(@PathVariable String username) {
         try {
             User user = userService.deactivate(username);
             user.setPassword(null);
-            return ResponseEntity.ok(UserResponse.builder()
-                    .success(true)
-                    .user(user)
-                    .build());
+            return ResponseEntity.ok(user);
         } catch (UsernameNotFoundException e) {
-            return badRequestResponse(e);
-        } catch (Exception e) {
-            return errorResponse(e);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
         }
     }
 
     @PutMapping("/{username}/activate")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<UserResponse> activateUser(@PathVariable String username) {
+    public ResponseEntity<User> activateUser(@PathVariable String username) {
         try {
             User user = userService.activate(username);
             user.setPassword(null);
-            return ResponseEntity.ok(UserResponse.builder()
-                    .success(true)
-                    .user(user)
-                    .build());
+            return ResponseEntity.ok(user);
         } catch (UsernameNotFoundException e) {
-            return badRequestResponse(e);
-        } catch (Exception e) {
-            return errorResponse(e);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
         }
     }
 
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{username}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<UserResponse> deleteUser(@PathVariable String username) {
+    public void deleteUser(@PathVariable String username) {
         try {
             userService.delete(username);
-            return ResponseEntity
-                    .status(HttpStatus.NO_CONTENT)
-                    .body(UserResponse.builder()
-                            .success(true)
-                            .build());
         } catch (UsernameNotFoundException e) {
-            return badRequestResponse(e);
-        } catch (Exception e) {
-            return errorResponse(e);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
         }
     }
 
     @GetMapping("/current")
-    public ResponseEntity<UserResponse> currentUser(Authentication authentication) {
+    public ResponseEntity<User> currentUser(Authentication authentication) {
         try {
             User user = userService.findUser(authentication.getName());
             user.setPassword(null);
-            return ResponseEntity.ok(UserResponse.builder()
-                    .success(true)
-                    .user(user)
-                    .build());
+            return ResponseEntity.ok(user);
         } catch (UsernameNotFoundException e) {
-            return badRequestResponse(e);
-        } catch (Exception e) {
-            return errorResponse(e);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
         }
     }
 
+    @ResponseStatus(HttpStatus.OK)
     @PatchMapping("/current/change-password")
-    public ResponseEntity<UserResponse> changePassword(@RequestBody ChangePasswordRequest request,
-                                                       Authentication authentication) {
+    public void changePassword(@RequestBody ChangePasswordRequest request,
+                               Authentication authentication) {
         try {
             if (!StringUtils.equals(request.getNewPassword(), request.getNewPasswordForCheck())) {
                 throw new IncorrectPasswordException("Введёные новые пароли не совпадают!");
             }
             userService.changePassword(authentication.getName(), request.getOldPassword(), request.getNewPassword());
-            return ResponseEntity.ok(UserResponse.builder()
-                    .success(true)
-                    .build());
         } catch (IncorrectPasswordException | UsernameNotFoundException e) {
-            return badRequestResponse(e);
-        } catch (Exception e) {
-            return errorResponse(e);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
         }
-    }
-
-    private ResponseEntity<UserResponse> badRequestResponse(Exception e) {
-        log.error(e.getMessage(), e);
-        return ResponseEntity
-                .badRequest()
-                .body(UserResponse.builder()
-                        .error(e.getMessage())
-                        .build());
-    }
-
-    private ResponseEntity<UserResponse> notFoundResponse(Exception e) {
-        log.error(e.getMessage(), e);
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(UserResponse.builder()
-                        .error(e.getMessage())
-                        .build());
-    }
-
-    private ResponseEntity<UserResponse> errorResponse(Exception e) {
-        log.error(e.getMessage(), e);
-        return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(UserResponse.builder()
-                        .error(e.getMessage())
-                        .build());
     }
 
 }

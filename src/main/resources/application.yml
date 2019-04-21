@@ -24,3 +24,6 @@ spring:
       hibernate:
         temp:
           use_jdbc_metadata_defaults: false
+    database-platform: org.hibernate.dialect.PostgreSQL94Dialect
+    generate-ddl: true
+    show-sql: true
