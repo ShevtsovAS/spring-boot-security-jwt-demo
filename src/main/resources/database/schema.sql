@@ -1,4 +1,4 @@
-create database security_demo;
+-- create database security_demo;
 drop table if exists app_users cascade;
 drop table if exists roles cascade;
 drop table if exists user_roles cascade;

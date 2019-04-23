@@ -7,7 +7,11 @@ spring:
       maximum-pool-size: 10
       connection-timeout: 3000
       connection-test-query: SELECT 1
-      pool-name: mlgelk_statistics
+      pool-name: security_demo
+    schema: 'classpath:/database/schema.sql'
+    data: 'classpath:/database/data.sql'
+# uncomment this at first start
+#    initialization-mode: always
   security:
     jwt:
       secret: SecretKeyToGenJWTs
@@ -24,6 +28,8 @@ spring:
       hibernate:
         temp:
           use_jdbc_metadata_defaults: false
+    hibernate:
+      ddl-auto: update
     database-platform: org.hibernate.dialect.PostgreSQL94Dialect
     generate-ddl: true
     show-sql: true

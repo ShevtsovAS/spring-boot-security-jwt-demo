@@ -17,7 +17,7 @@ import javax.persistence.*;
 @AllArgsConstructor
 public abstract class AbstractBaseEntity<ID extends Number> implements Persistable<ID> {
 
-    private static final int START_SEQ = 100000;
+    public static final int START_SEQ = 100000;
 
     @Id
     @SequenceGenerator(name = "global_seq", sequenceName = "global_seq", allocationSize = 1, initialValue = START_SEQ)
