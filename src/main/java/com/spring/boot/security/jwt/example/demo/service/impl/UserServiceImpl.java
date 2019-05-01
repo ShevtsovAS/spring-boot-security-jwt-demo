@@ -1,5 +1,6 @@
 package com.spring.boot.security.jwt.example.demo.service.impl;
 
+import com.spring.boot.security.jwt.example.demo.config.SecurityProperties;
 import com.spring.boot.security.jwt.example.demo.domain.Role;
 import com.spring.boot.security.jwt.example.demo.domain.User;
 import com.spring.boot.security.jwt.example.demo.model.users.*;
@@ -9,7 +10,6 @@ import com.spring.boot.security.jwt.example.demo.service.PasswordValidateService
 import com.spring.boot.security.jwt.example.demo.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -32,9 +32,7 @@ public class UserServiceImpl implements UserService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder bCryptPasswordEncoder;
     private final PasswordValidateService passwordValidateService;
-
-    @Value("${spring.security.password.description}")
-    private String passwordDescription;
+    private final SecurityProperties securityProperties;
 
     @Override
     public User create(CreateUserRequest request) {
@@ -43,7 +41,7 @@ public class UserServiceImpl implements UserService {
         });
 
         if (passwordValidateService.invalid(request.getPassword())) {
-            throw new IncorrectPasswordException(passwordDescription);
+            throw new IncorrectPasswordException(securityProperties.getDescription());
         }
 
         User user = User.builder()
@@ -83,7 +81,7 @@ public class UserServiceImpl implements UserService {
         }
 
         if (passwordValidateService.invalid(newPassword)) {
-            throw new IncorrectPasswordException(passwordDescription);
+            throw new IncorrectPasswordException(securityProperties.getDescription());
         }
 
         user.setPassword(bCryptPasswordEncoder.encode(newPassword));
