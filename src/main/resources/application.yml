@@ -1,7 +1,16 @@
 spring:
   profiles:
-    active: ssl
+    active: develop,security,ssl
+  security:
+    password:
+      pattern: "^(?=.*[a-z]|[A-Z]|[?-?]|[?-?])(?=.*\\d)[A-Za-z?-??-?\\d-+%().,:;?!*<>@{}$#_/\\[\\]\\\\]{8,}"
+      description: "Пароль должен содержать в себе минимум 8 символов, русские или латинские буквы и цифры"
+---
+spring:
+  profiles: develop
   datasource:
+#    uncomment this at first start
+#    initialization-mode: always
     url:  jdbc:postgresql://localhost:5432/security_demo
     username: postgres
     password: postgres
@@ -12,18 +21,6 @@ spring:
       pool-name: security_demo
     schema: 'classpath:/database/schema.sql'
     data: 'classpath:/database/data.sql'
-# uncomment this at first start
-#    initialization-mode: always
-  security:
-    jwt:
-      secret: SecretKeyToGenJWTs
-      expiration-time: 24 #hours
-      token-prefix: 'Token '
-      header-string: Authorization
-    password:
-      pattern: "^(?=.*[a-z]|[A-Z]|[?-?]|[?-?])(?=.*\\d)[A-Za-z?-??-?\\d-+%().,:;?!*<>@{}$#_/\\[\\]\\\\]{8,}"
-      description: "Пароль должен содержать в себе минимум 8 символов, русские или латинские буквы и цифры"
-
   #https://stackoverflow.com/questions/4588755/disabling-contextual-lob-creation-as-createclob-method-threw-error
   jpa:
     properties:
@@ -35,6 +32,25 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQL94Dialect
     generate-ddl: true
     show-sql: true
+---
+spring:
+  profiles: test
+  datasource:
+    url:  jdbc:h2:file:./security_demo
+    username: sa
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    generate-ddl: true
+    show-sql: true
+---
+spring:
+  profiles: security
+  security:
+    jwt:
+      secret: SecretKeyToGenJWTs
+      expiration-time: 24 #hours
+      token-prefix: 'Token '
+      header-string: Authorization
 ---
 spring:
   profiles: ssl
