@@ -1,5 +1,6 @@
 package com.spring.boot.security.jwt.example.demo.controller;
 
+import com.spring.boot.security.jwt.example.demo.aspect.LogExecutionTime;
 import com.spring.boot.security.jwt.example.demo.domain.Role;
 import com.spring.boot.security.jwt.example.demo.domain.User;
 import com.spring.boot.security.jwt.example.demo.model.users.*;
@@ -30,6 +31,7 @@ public class UserController {
 
     private final UserService userService;
 
+    @LogExecutionTime
     @GetMapping("/{username}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<User> findUser(@PathVariable String username) {
@@ -42,6 +44,7 @@ public class UserController {
         }
     }
 
+    @LogExecutionTime
     @PostMapping("/roles")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Role> createRole(@RequestBody CreateRoleRequest request) {
@@ -53,6 +56,7 @@ public class UserController {
         }
     }
 
+    @LogExecutionTime
     @PostMapping
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<User> createUser(@RequestBody CreateUserRequest request) {
@@ -65,6 +69,7 @@ public class UserController {
         }
     }
 
+    @LogExecutionTime
     @PutMapping("/{username}/roles")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<User> updateUserRoles(@PathVariable String username,
@@ -78,6 +83,7 @@ public class UserController {
         }
     }
 
+    @LogExecutionTime
     @PutMapping("/{username}/deactivate")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<User> deactivateUser(@PathVariable String username) {
@@ -90,6 +96,7 @@ public class UserController {
         }
     }
 
+    @LogExecutionTime
     @PutMapping("/{username}/activate")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<User> activateUser(@PathVariable String username) {
@@ -102,6 +109,7 @@ public class UserController {
         }
     }
 
+    @LogExecutionTime
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{username}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
@@ -113,6 +121,7 @@ public class UserController {
         }
     }
 
+    @LogExecutionTime
     @GetMapping("/current")
     public ResponseEntity<User> currentUser(Authentication authentication) {
         try {
@@ -124,6 +133,7 @@ public class UserController {
         }
     }
 
+    @LogExecutionTime
     @ResponseStatus(HttpStatus.OK)
     @PatchMapping("/current/change-password")
     public void changePassword(@RequestBody ChangePasswordRequest request,

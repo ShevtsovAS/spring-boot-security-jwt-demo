@@ -19,6 +19,7 @@ import java.util.Set;
 @AllArgsConstructor
 @Entity
 @Table(name = "roles")
+@ToString(callSuper = true, exclude = "users")
 public class Role extends AbstractBaseEntity<Long> implements GrantedAuthority {
 
     @NotNull
