@@ -10,6 +10,8 @@ import com.spring.boot.security.jwt.example.demo.service.PasswordValidateService
 import com.spring.boot.security.jwt.example.demo.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -48,6 +50,7 @@ public class UserServiceImpl implements UserService {
                 .username(request.getUsername())
                 .password(bCryptPasswordEncoder.encode(request.getPassword()))
                 .roles(getRolesByNames(request.getRoles()))
+                .active(request.isActive())
                 .build();
 
         return userRepository.save(user);
@@ -121,6 +124,30 @@ public class UserServiceImpl implements UserService {
         return roleRepository.save(Role.builder()
                 .name(request.getRoleName())
                 .build());
+    }
+
+    @Override
+    public Page<User> findAll(Pageable pageable) {
+        return userRepository.findAll(pageable);
+    }
+
+    @Override
+    public User getUser(Long userId) {
+        return userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(String.format("Пользователя с id %d не найденно!", userId)));
+    }
+
+    @Override
+    public User update(UpdateUserRequest updateUserRequest) {
+        User user = getUser(updateUserRequest.getUserId());
+        user.setUsername(updateUserRequest.getUsername());
+        user.setActive(updateUserRequest.isActive());
+        user.setRoles(getRolesByNames(updateUserRequest.getRoles()));
+        return userRepository.save(user);
+    }
+
+    @Override
+    public void delete(Long userId) {
+        userRepository.deleteById(userId);
     }
 
     private Set<Role> getRolesByNames(Set<String> roleNames) {

@@ -13,20 +13,19 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Set;
 
-import static com.spring.boot.security.jwt.example.demo.controller.UserController.USERS_API;
+import static com.spring.boot.security.jwt.example.demo.controller.UserControllerRest.USERS_API;
 
 @Slf4j
 @CrossOrigin
-@Controller
+@RestController
 @RequestMapping(USERS_API)
 @RequiredArgsConstructor
-public class UserController {
+public class UserControllerRest {
     static final String USERS_API = "/api/v1/users";
 
     private final UserService userService;

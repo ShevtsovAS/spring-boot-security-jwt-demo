@@ -19,7 +19,6 @@ import java.util.Set;
 @AllArgsConstructor
 @Entity
 @Table(name = "roles")
-@ToString(callSuper = true, exclude = "users")
 public class Role extends AbstractBaseEntity<Long> implements GrantedAuthority {
 
     @NotNull
@@ -49,6 +48,11 @@ public class Role extends AbstractBaseEntity<Long> implements GrantedAuthority {
     @Override
     @JsonIgnore
     public String getAuthority() {
+        return name;
+    }
+
+    @Override
+    public String toString() {
         return name;
     }
 }

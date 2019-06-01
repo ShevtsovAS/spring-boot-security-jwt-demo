@@ -33,7 +33,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import static com.spring.boot.security.jwt.example.demo.controller.UserController.USERS_API;
+import static com.spring.boot.security.jwt.example.demo.controller.UserControllerRest.USERS_API;
 import static java.util.stream.Collectors.toSet;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.*;
@@ -49,7 +49,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringRunner.class)
 @ActiveProfiles("test,security,ssl")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class UserControllerTest {
+public class UserControllerRestTest {
 
     private static final String TEST_USER_NAME = "testUser";
     private static final String TEST_USER_PASSWORD = "password123";
