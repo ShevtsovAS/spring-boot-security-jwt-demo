@@ -1,8 +1,19 @@
 var usersUrl = "/api/v1/users";
 
 $(function () {
+    var userRow;
+
     $('body').on('click', '.delete-user', function () {
-        deleteUser($(this).closest('tr'));
+        userRow = $(this).closest('tr');
+        var username = userRow.children('.username').text();
+        $('#delete-user-message').text(`Are you sure you want delete user ${username}?`);
+        $('#delete-user-confirm').modal();
+    });
+
+    $("#confirm-delete-user").on("click", function () {
+        $("#delete-user-confirm").modal('hide');
+        var username = userRow.children('.username').text();
+        deleteUser(username);
     });
 });
 
@@ -62,17 +73,11 @@ function getUserData(user) {
         .append(actionButtons);
 }
 
-function deleteUser(userRow) {
-    var username = userRow.children('.username').text();
-    if (confirm(`Вы действительно хотите удалить пользователя ${username}?`)) {
-        var deleteUserUrl = usersUrl + `/${username}`;
-        $.ajax(deleteUserUrl, {
-            method: 'DELETE',
-            success: function () {
-                updateUserList();
-            }
-        });
-    } else {
-        return false;
-    }
+function deleteUser(username) {
+    $.ajax(usersUrl + `/${username}`, {
+        method: 'DELETE',
+        success: function () {
+            updateUserList();
+        }
+    });
 }
