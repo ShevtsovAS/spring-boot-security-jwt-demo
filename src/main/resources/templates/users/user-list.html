@@ -1,43 +1,30 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head th:include="/users/fragments/layout :: headTag">
+<head th:include="/users/fragments/users-layout :: headTag">
     <title id="pageTitle">Users</title>
 </head>
-<body>
+<body onload="updateUserList()">
 
 <div class="container">
-    <div th:include="/users/fragments/layout :: bodyHeader"></div>
+    <div th:include="/users/fragments/users-layout :: bodyHeader"></div>
 
-    <a th:href="@{/users/add}" class="btn btn-primary btn-sm mb-3">
-        Add user
-    </a>
-    <table class="table table-bordered table-striped">
+    <a th:href="@{/users/add}" class="btn btn-primary btn-sm mb-3">Add user</a>
+
+    <h5 id="empty-list">Список пользователей пуст...</h5>
+
+    <table class="table table-bordered table-striped user-table">
         <thead class="thead-dark">
         <tr>
             <th>Username</th>
             <th>Password</th>
             <th>Active</th>
             <th>Roles</th>
-            <th>Action</th>
+            <th class="text-center">Action</th>
         </tr>
         </thead>
 
-        <tbody>
-        <tr th:each="user: ${users}">
-            <td th:text="${user.username}"></td>
-            <td th:text="${user.password}"></td>
-            <td th:text="${user.active}"></td>
-            <td th:text="${user.roles}" class="text-nowrap"></td>
-            <td class="text-nowrap">
-                <a th:href="@{/users/edit(userId=${user.id})}" class="btn btn-info btn-sm">Update</a>
-                <a th:href="@{/users/delete(userId=${user.id})}"
-                   class="btn btn-danger btn-sm"
-                   onclick="if (!(confirm('Вы уверены что хотите удалить этого пользователя?'))) return false">Delete</a>
-            </td>
-        </tr>
-        </tbody>
+        <tbody id="user-list"></tbody>
     </table>
 </div>
-
 </body>
 </html>

@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head th:include="/users/fragments/layout :: headTag">
+<head th:include="/users/fragments/users-layout :: headTag">
     <title id="pageTitle">Add user</title>
 </head>
 <body>
 
 <div class="container">
-    <div th:include="/users/fragments/layout :: bodyHeader"></div>
+    <div th:include="/users/fragments/users-layout :: bodyHeader"></div>
 
     <p class="h4 mb-4">Save user</p>
     <form action="#" th:action="@{/users/create}" th:object="${createRequest}" method="post" class="border border-light p-5 mb-4">
