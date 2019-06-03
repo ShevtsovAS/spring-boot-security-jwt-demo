@@ -1,19 +1,11 @@
 var usersUrl = "/api/v1/users";
 
 $(function () {
-    var userRow;
-
     $('body').on('click', '.delete-user', function () {
-        userRow = $(this).closest('tr');
-        var username = userRow.children('.username').text();
-        $('#delete-user-message').text(`Are you sure you want delete user ${username}?`);
+        var username = $(this).closest('tr').children('.username').text();
+        $('#delete-user-message').text(`Are you sure you want delete ${username}?`);
+        $("#confirm-delete-user").attr('onclick', `deleteUser('${username}')`);
         $('#delete-user-confirm').modal();
-    });
-
-    $("#confirm-delete-user").on("click", function () {
-        $("#delete-user-confirm").modal('hide');
-        var username = userRow.children('.username').text();
-        deleteUser(username);
     });
 });
 
@@ -74,7 +66,7 @@ function getUserData(user) {
 }
 
 function deleteUser(username) {
-    $.ajax(usersUrl + `/${username}`, {
+    $.ajax(`${usersUrl}/${username}`, {
         method: 'DELETE',
         success: function () {
             updateUserList();
