@@ -7,6 +7,22 @@ $(function () {
         $("#confirm-delete-user").attr('onclick', `deleteUser('${username}')`);
         $('#delete-user-confirm').modal();
     });
+
+    $('#save-user-button').click(function () {
+        $.ajax(usersUrl, {
+            data: getUserJson($('#add-user-form :input')),
+            contentType: 'application/json',
+            type: 'POST',
+            success: function (data) {
+                updateUserList();
+            }
+        });
+    });
+
+    $('.modal').on('hidden.bs.modal', function (e) {
+        $('#add-user-form :input').val('');
+        $('#active').val("true");
+    });
 });
 
 function updateUserList() {
@@ -19,18 +35,16 @@ function updateUserList() {
             $.each(data.content, function (index, user) {
                 $('#user-list').append(getUserData(user));
             });
-            $('.user-table').show();
             $('#empty-list').hide();
+            $('.user-table').show();
         }
     });
 }
 
 function getRoleNames(roles) {
-    var roleNames = [];
-    $.each(roles, function (index, role) {
-        roleNames.push(role.name);
-    });
-    return roleNames.join(', ');
+    return $.map(roles, function (role) {
+        return role.name;
+    }).join(', ');
 }
 
 function getUpdateButton(user) {
@@ -50,19 +64,12 @@ function getActionButtons(user) {
 }
 
 function getUserData(user) {
-    var userId = user.id;
-    var username = user.username;
-    var password = user.password;
-    var active = user.active;
-    var roles = getRoleNames(user.roles);
-    var actionButtons = getActionButtons(user);
-
     return $('<tr></tr>')
-        .append($('<td class="username"></td>').text(username))
-        .append($('<td></td>').text(password))
-        .append($('<td></td>').text(active))
-        .append($('<td class="text-nowrap"></td>').text(roles))
-        .append(actionButtons);
+        .append($(`<td class="username">${user.username}</td>`))
+        .append($(`<td>${user.password}</td>`))
+        .append($(`<td>${user.active}</td>`))
+        .append($(`<td class="text-nowrap">${getRoleNames(user.roles)}</td>`))
+        .append(getActionButtons(user));
 }
 
 function deleteUser(username) {
@@ -72,4 +79,20 @@ function deleteUser(username) {
             updateUserList();
         }
     });
+}
+
+function getUserJson(userFields) {
+    var data = {};
+    $(userFields.serializeArray()).each(function () {
+        if (this.name == 'roles') {
+            var roles = [];
+            $(this.value.split(",")).each(function () {
+                roles.push($.trim(this));
+            })
+            data[this.name] = roles;
+        } else {
+            data[this.name] = this.value;
+        }
+    });
+    return JSON.stringify(data);
 }
