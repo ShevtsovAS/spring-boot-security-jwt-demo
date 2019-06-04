@@ -66,6 +66,7 @@ public class UserControllerRestTest {
             .username(TEST_CREATED_USER_NAME)
             .password(TEST_CREATED_USER_PASSWORD)
             .roles(Collections.singleton("ROLE_USER"))
+            .active(true)
             .build();
 
     private static final CreateRoleRequest CREATE_ROLE_REQUEST = CreateRoleRequest.builder()
