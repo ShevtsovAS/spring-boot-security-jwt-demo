@@ -68,7 +68,7 @@ public class UserControllerRest {
     @LogExecutionTime
     @PostMapping
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<User> createUser(@RequestBody CreateUserRequest request) {
+    public ResponseEntity<User> createUser(@RequestBody SaveUserRequest request) {
         try {
             User created = userService.create(request);
             created.setPassword(null);
@@ -82,10 +82,10 @@ public class UserControllerRest {
     @PutMapping("/{userId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<User> updateUser(@PathVariable Long userId,
-                                           @RequestBody UpdateUserRequest updateUserRequest) {
+                                           @RequestBody SaveUserRequest saveUserRequest) {
         try {
-            updateUserRequest.setUserId(userId);
-            User user = userService.update(updateUserRequest);
+            saveUserRequest.setUserId(userId);
+            User user = userService.update(saveUserRequest);
             user.setPassword(null);
             return ResponseEntity.ok(user);
         } catch (UsernameNotFoundException | RoleNotFoundException e) {

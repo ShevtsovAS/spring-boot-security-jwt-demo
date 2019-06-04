@@ -3,15 +3,14 @@ package com.spring.boot.security.jwt.example.demo.service;
 import com.spring.boot.security.jwt.example.demo.domain.Role;
 import com.spring.boot.security.jwt.example.demo.domain.User;
 import com.spring.boot.security.jwt.example.demo.model.users.CreateRoleRequest;
-import com.spring.boot.security.jwt.example.demo.model.users.CreateUserRequest;
-import com.spring.boot.security.jwt.example.demo.model.users.UpdateUserRequest;
+import com.spring.boot.security.jwt.example.demo.model.users.SaveUserRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.Set;
 
 public interface UserService {
-    User create(CreateUserRequest request);
+    User create(SaveUserRequest request);
 
     User updateUserRoles(String username, Set<String> roleNames);
 
@@ -31,7 +30,7 @@ public interface UserService {
 
     User getUser(Long userId);
 
-    User update(UpdateUserRequest user);
+    User update(SaveUserRequest user);
 
     void delete(Long userId);
 }

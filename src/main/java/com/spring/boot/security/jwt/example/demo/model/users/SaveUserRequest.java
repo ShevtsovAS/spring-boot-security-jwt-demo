@@ -11,7 +11,8 @@ import java.util.Set;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreateUserRequest {
+public class SaveUserRequest {
+    private Long userId;
     private String username;
     private String password;
     private Set<String> roles;

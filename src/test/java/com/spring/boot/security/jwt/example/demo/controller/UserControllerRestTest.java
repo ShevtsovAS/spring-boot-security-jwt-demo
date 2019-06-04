@@ -6,7 +6,7 @@ import com.spring.boot.security.jwt.example.demo.domain.User;
 import com.spring.boot.security.jwt.example.demo.model.users.ApplicationUser;
 import com.spring.boot.security.jwt.example.demo.model.users.ChangePasswordRequest;
 import com.spring.boot.security.jwt.example.demo.model.users.CreateRoleRequest;
-import com.spring.boot.security.jwt.example.demo.model.users.CreateUserRequest;
+import com.spring.boot.security.jwt.example.demo.model.users.SaveUserRequest;
 import com.spring.boot.security.jwt.example.demo.repository.RoleRepository;
 import com.spring.boot.security.jwt.example.demo.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -62,7 +62,7 @@ public class UserControllerRestTest {
     private static final Role EXISTED_ROLE = new Role(1L, "ROLE_USER");
     private static final Set<Role> TEST_USER_ROLES = Collections.singleton(EXISTED_ROLE);
 
-    private static final CreateUserRequest CREATE_USER_REQUEST = CreateUserRequest.builder()
+    private static final SaveUserRequest SAVE_USER_REQUEST = SaveUserRequest.builder()
             .username(TEST_CREATED_USER_NAME)
             .password(TEST_CREATED_USER_PASSWORD)
             .roles(Collections.singleton("ROLE_USER"))
@@ -126,7 +126,7 @@ public class UserControllerRestTest {
         when(userRepository.findByUsername(TEST_USER_NAME)).thenReturn(Optional.of(TEST_USER));
         when(userRepository.findByUsername(TEST_CREATED_USER_NAME)).thenReturn(Optional.empty());
         when(userRepository.save(testUserToSaveWithEncodedPassword)).thenReturn(TEST_CREATED_USER);
-        when(roleRepository.findAllByNameIn(CREATE_USER_REQUEST.getRoles())).thenReturn(TEST_USER_ROLES);
+        when(roleRepository.findAllByNameIn(SAVE_USER_REQUEST.getRoles())).thenReturn(TEST_USER_ROLES);
         when(roleRepository.findFirstByName(EXISTED_ROLE.getName())).thenReturn(Optional.of(EXISTED_ROLE));
     }
 
@@ -202,7 +202,7 @@ public class UserControllerRestTest {
     public void createUser() throws Exception {
         MvcResult result = mvc.perform(post(USERS_API)
                 .contentType(APPLICATION_JSON)
-                .content(mapper.writeValueAsString(CREATE_USER_REQUEST)))
+                .content(mapper.writeValueAsString(SAVE_USER_REQUEST)))
                 .andExpect(status().is(HttpStatus.CREATED.value()))
                 .andExpect(content().contentType(APPLICATION_JSON_UTF8))
                 .andReturn();
@@ -213,14 +213,14 @@ public class UserControllerRestTest {
     @Test
     @WithMockUser(authorities = "ROLE_ADMIN")
     public void createUserBadRequest() throws Exception {
-        CreateUserRequest badCreateUserRequest = CreateUserRequest.builder()
+        SaveUserRequest badSaveUserRequest = SaveUserRequest.builder()
                 .username(TEST_USER_NAME)
                 .password(TEST_USER_PASSWORD)
                 .roles(Collections.singleton("ROLE_USER"))
                 .build();
         mvc.perform(post(USERS_API)
                 .contentType(APPLICATION_JSON)
-                .content(mapper.writeValueAsString(badCreateUserRequest)))
+                .content(mapper.writeValueAsString(badSaveUserRequest)))
                 .andExpect(status().isBadRequest());
     }
 
@@ -229,7 +229,7 @@ public class UserControllerRestTest {
     public void createUserForbidden() throws Exception {
         mvc.perform(post(USERS_API)
                 .contentType(APPLICATION_JSON)
-                .content(mapper.writeValueAsString(CREATE_USER_REQUEST)))
+                .content(mapper.writeValueAsString(SAVE_USER_REQUEST)))
                 .andExpect(status().isForbidden());
     }
 

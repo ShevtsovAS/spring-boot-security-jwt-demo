@@ -37,7 +37,7 @@ public class UserServiceImpl implements UserService {
     private final SecurityProperties securityProperties;
 
     @Override
-    public User create(CreateUserRequest request) {
+    public User create(SaveUserRequest request) {
         userRepository.findByUsername(request.getUsername()).ifPresent(u -> {
             throw new UserExistsException(USER_EXISTS_MESSAGE);
         });
@@ -137,11 +137,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User update(UpdateUserRequest updateUserRequest) {
-        User user = getUser(updateUserRequest.getUserId());
-        user.setUsername(updateUserRequest.getUsername());
-        user.setActive(updateUserRequest.isActive());
-        user.setRoles(getRolesByNames(updateUserRequest.getRoles()));
+    public User update(SaveUserRequest saveUserRequest) {
+        User user = getUser(saveUserRequest.getUserId());
+        user.setUsername(saveUserRequest.getUsername());
+        user.setActive(saveUserRequest.isActive());
+        user.setRoles(getRolesByNames(saveUserRequest.getRoles()));
         return userRepository.save(user);
     }
 
