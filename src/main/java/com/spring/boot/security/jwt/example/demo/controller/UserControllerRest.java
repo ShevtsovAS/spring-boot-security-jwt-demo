@@ -79,6 +79,21 @@ public class UserControllerRest {
     }
 
     @LogExecutionTime
+    @PutMapping("/{userId}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<User> updateUser(@PathVariable Long userId,
+                                           @RequestBody UpdateUserRequest updateUserRequest) {
+        try {
+            updateUserRequest.setUserId(userId);
+            User user = userService.update(updateUserRequest);
+            user.setPassword(null);
+            return ResponseEntity.ok(user);
+        } catch (UsernameNotFoundException | RoleNotFoundException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
+        }
+    }
+
+    @LogExecutionTime
     @PutMapping("/{username}/roles")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<User> updateUserRoles(@PathVariable String username,
