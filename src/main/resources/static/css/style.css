@@ -7,3 +7,12 @@ body {
 .user-table {
     display: none;
 }
+
+.active.red {
+
+    color: red;
+}
+
+.active.green {
+    color: green;
+}

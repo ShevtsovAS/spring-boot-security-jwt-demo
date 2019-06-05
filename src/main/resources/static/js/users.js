@@ -1,6 +1,11 @@
 var usersUrl = "/api/v1/users";
 
 $(function () {
+    $('#multiple-checkboxes')
+        .append('<option value="ROLE_USER">user</option>')
+        .append('<option value="ROLE_ADMIN">admin</option>')
+        .selectpicker({noneSelectedText: 'Roles'});
+
     $('body').on('click', '.delete-user', function () {
         var username = $(this).closest('tr').children('.username').text();
         $('#delete-user-message').text(`Are you sure you want delete ${username}?`);
@@ -11,12 +16,12 @@ $(function () {
     $('body').on('click', '.update-user', function () {
         var userId = $(this).closest('tr').children('.userId').val();
         var username = $(this).closest('tr').children('.username').text();
-        var active = $(this).closest('tr').children('.active').text() == 'true';
-        var roles = $(this).closest('tr').children('.roles').text();
+        var active = $(this).closest('tr').children('.active').text() == 'YES';
+        var roles = $(this).closest('tr').children('.roles').text().split(', ');
         $('#add-user-form').children(':input[name="userId"]').val(userId);
         $('#add-user-form').children(':input[name="username"]').val(username);
         $('#add-user-form').children(':input[name="password"]').prop('type', 'hidden');
-        $('#add-user-form').children(':input[name="roles"]').val(roles);
+        $('#multiple-checkboxes').val(roles).selectpicker("refresh");
         $('#active').prop('checked', active);
         $('#add-user-modal').modal();
     });
@@ -30,6 +35,7 @@ $(function () {
         $('#add-user-form :input').val('');
         $('#active').val("true").prop('checked', true);
         $('#add-user-form').children(':input[name="password"]').prop('type', 'password');
+        $('#multiple-checkboxes').selectpicker("refresh");
     });
 });
 
@@ -93,11 +99,13 @@ function getActionButtons(user) {
 }
 
 function getUserData(user) {
+    var active = user.active ? 'YES' : 'NO';
+    var activeColor = user.active ? 'green' : 'red';
     return $('<tr></tr>')
         .append($('<input class="userId" type="hidden">').val(user.id))
         .append($(`<td class="username">${user.username}</td>`))
         .append($(`<td class="password">${user.password}</td>`))
-        .append($(`<td class="active">${user.active}</td>`))
+        .append($(`<td class="active font-weight-bold">${active}</td>`).addClass(activeColor))
         .append($(`<td class="roles text-nowrap">${getRoleNames(user.roles)}</td>`))
         .append(getActionButtons(user));
 }
@@ -113,12 +121,10 @@ function deleteUser(username) {
 
 function getUserJson(userFields) {
     var data = {};
+    var roles = [];
     $(userFields.serializeArray()).each(function () {
         if (this.name == 'roles') {
-            var roles = [];
-            $(this.value.split(",")).each(function () {
-                roles.push($.trim(this));
-            })
+            roles.push(this.value);
             data[this.name] = roles;
         } else {
             data[this.name] = this.value;
