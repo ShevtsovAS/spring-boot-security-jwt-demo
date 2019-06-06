@@ -1,10 +1,8 @@
 var usersUrl = "/api/v1/users";
+var dictionaryUrl = "/api/v1/dictionaries"
 
 $(function () {
-    $('#multiple-checkboxes')
-        .append('<option value="ROLE_USER">user</option>')
-        .append('<option value="ROLE_ADMIN">admin</option>')
-        .selectpicker({noneSelectedText: 'Roles'});
+    initRolesMultiselect();
 
     $('body').on('click', '.delete-user', function () {
         var username = $(this).closest('tr').children('.username').text();
@@ -131,4 +129,15 @@ function getUserJson(userFields) {
         }
     });
     return data;
+}
+
+function initRolesMultiselect() {
+    $.getJSON(`${dictionaryUrl}/roles`, function (data) {
+        $.each(data.properties, function () {
+            $('#multiple-checkboxes').append(`<option value="${this.name}">${this.value}</option>`);
+        });
+        $('#multiple-checkboxes')
+            .selectpicker({noneSelectedText: 'Roles'})
+            .selectpicker("refresh");
+    });
 }

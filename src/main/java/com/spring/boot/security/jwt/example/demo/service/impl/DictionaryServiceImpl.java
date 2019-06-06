@@ -24,8 +24,8 @@ public class DictionaryServiceImpl implements DictionaryService {
 
     static {
         ROLES_DICTIONARY = Stream.of(
-                new AbstractMap.SimpleEntry<>("ROLE_USER", "user"),
-                new AbstractMap.SimpleEntry<>("ROLE_ADMIN", "admin")
+                new AbstractMap.SimpleEntry<>("ROLE_USER", "User"),
+                new AbstractMap.SimpleEntry<>("ROLE_ADMIN", "Administrator")
         ).collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
