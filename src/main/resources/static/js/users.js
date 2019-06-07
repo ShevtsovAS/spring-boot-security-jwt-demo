@@ -66,8 +66,8 @@ function updateUserList() {
             $('.user-table').hide();
             $('#empty-list').show();
         } else {
-            $.each(data.content, function (index, user) {
-                $('#user-list').append(getUserData(user));
+            $.each(data.content, function () {
+                $('#user-list').append(getUserData(this));
             });
             $('#empty-list').hide();
             $('.user-table').show();
@@ -90,7 +90,6 @@ function getDeleteButton(user) {
 }
 
 function getActionButtons(user) {
-    var warnMessage = "Вы уверены что хотите удалить пользователя " + user.username + "?";
     return $('<td class="text-nowrap"></td>')
         .append(getUpdateButton(user))
         .append(getDeleteButton(user));
