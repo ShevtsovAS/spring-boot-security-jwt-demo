@@ -1,6 +1,8 @@
 var usersUrl = "/api/v1/users";
 var dictionaryUrl = "/api/v1/dictionaries";
-var pageSize = 20;
+var currentPage = 0;
+var pageSize = 10;
+var defaultSort = "username,asc";
 
 $(function () {
     $('body').on('click', '.page-item', function () {
@@ -48,7 +50,7 @@ function updateUser(userData) {
         contentType: 'application/json',
         type: 'PUT',
         success: function (data) {
-            updateUserList();
+            loadUserList();
         }
     });
 }
@@ -59,13 +61,13 @@ function createUser(userData) {
         contentType: 'application/json',
         type: 'POST',
         success: function (data) {
-            updateUserList();
+            loadUserList();
         }
     });
 }
 
 function loadUserList() {
-    updateUserList(0, pageSize, "username,asc");
+    updateUserList(currentPage, pageSize, defaultSort);
 }
 
 function updateUserList(pageNum, size, sort) {
@@ -93,6 +95,7 @@ function updateUserList(pageNum, size, sort) {
             }
         }
     );
+    currentPage = pageNum;
 }
 
 function showUserPagination(page, size, sort) {
@@ -232,7 +235,7 @@ function deleteUser(username) {
     $.ajax(`${usersUrl}/${username}`, {
         method: 'DELETE',
         success: function () {
-            updateUserList();
+            loadUserList();
         }
     });
 }
