@@ -3,7 +3,7 @@
 <head th:include="/users/fragments/users-layout :: headTag">
     <title id="pageTitle">Users</title>
 </head>
-<body onload="updateUserList()">
+<body onload="loadUserList()">
 
 <div class="container">
     <div th:include="/users/fragments/users-layout :: bodyHeader"></div>
@@ -25,6 +25,38 @@
 
         <tbody id="user-list"></tbody>
     </table>
+
+    <nav id="user-pagination">
+        <ul class="pagination justify-content-center">
+            <li class="page-item first">
+                <a class="page-link" href="">First</a>
+            </li>
+            <li class="page-item previous">
+                <a class="page-link" href="" aria-label="Previous">
+                    <span aria-hidden="true">«</span>
+                    <span class="sr-only">Previous</span>
+                </a>
+            </li>
+            <li class="page-item left-item">
+                <a class="page-link" href="">3</a>
+            </li>
+            <li class="page-item center-item">
+                <a class="page-link" href="">4</a>
+            </li>
+            <li class="page-item right-item">
+                <a class="page-link" href="">5</a>
+            </li>
+            <li class="page-item next">
+                <a class="page-link" href="" aria-label="Следующая">
+                    <span aria-hidden="true">»</span>
+                    <span class="sr-only">Следующая</span>
+                </a>
+            </li>
+            <li class="page-item last">
+                <a class="page-link" href="">Last (5)</a>
+            </li>
+        </ul>
+    </nav>
 </div>
 
 <div class="modal fade" id="delete-user-confirm" tabindex="-1" role="dialog" aria-labelledby="deletingUser" aria-hidden="true">

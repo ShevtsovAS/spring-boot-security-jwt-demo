@@ -1,7 +1,12 @@
 var usersUrl = "/api/v1/users";
-var dictionaryUrl = "/api/v1/dictionaries"
+var dictionaryUrl = "/api/v1/dictionaries";
+var pageSize = 20;
 
 $(function () {
+    $('body').on('click', '.page-item', function () {
+        return false;
+    });
+
     initRolesMultiselect();
 
     $('body').on('click', '.delete-user', function () {
@@ -59,20 +64,136 @@ function createUser(userData) {
     });
 }
 
-function updateUserList() {
-    $.getJSON(usersUrl, function (data) {
-        $('#user-list').html('');
-        if (data.empty) {
-            $('.user-table').hide();
-            $('#empty-list').show();
-        } else {
-            $.each(data.content, function () {
-                $('#user-list').append(getUserData(this));
-            });
-            $('#empty-list').hide();
-            $('.user-table').show();
+function loadUserList() {
+    updateUserList(0, pageSize, "username,asc");
+}
+
+function updateUserList(pageNum, size, sort) {
+    $.getJSON(usersUrl, {
+            page: pageNum,
+            size: size,
+            sort: sort
+        },
+        function (page) {
+            $('#user-list').html('');
+            if (page.empty) {
+                $('.user-table').hide();
+                $('#empty-list').show();
+            } else {
+                $.each(page.content, function () {
+                    $('#user-list').append(getUserData(this));
+                });
+                $('#empty-list').hide();
+                $('.user-table').show();
+                if (page.totalPages > 1) {
+                    showUserPagination(page, size, sort);
+                } else {
+                    $('#user-pagination').hide();
+                }
+            }
         }
-    });
+    );
+}
+
+function showUserPagination(page, size, sort) {
+    var paging = {
+        firstPage: $('#user-pagination').find('.first'),
+        prevPage: $('#user-pagination').find('.previous'),
+        leftItem: $('#user-pagination').find('.left-item'),
+        centerItem: $('#user-pagination').find('.center-item'),
+        rightItem: $('#user-pagination').find('.right-item'),
+        nextPage: $('#user-pagination').find('.next'),
+        lastPage: $('#user-pagination').find('.last'),
+        pageIndex: page.number,
+        pageNum: page.number + 1,
+        lastPageIndex: page.totalPages - 1,
+        totalPages: page.totalPages,
+        size: size,
+        sort: sort
+    }
+
+    paging.leftItem.show();
+    paging.rightItem.show();
+
+    if (page.first) {
+        firstPageInit(paging);
+    } else if (page.last) {
+        lastPageInit(paging);
+    } else {
+        currentPageInit(paging);
+    }
+
+    paging.lastPage.children('.page-link').text(`Last (${page.totalPages})`);
+
+    $('#user-pagination').show();
+}
+
+function firstPageInit(paging) {
+    paging.firstPage.addClass('disabled').children('.page-link')
+        .removeAttr('onclick');
+    paging.prevPage.addClass('disabled').children('.page-link')
+        .removeAttr('onclick');
+    paging.leftItem.addClass('active').children('.page-link')
+        .removeAttr('onclick')
+        .text(`${paging.pageNum}`);
+    paging.centerItem.removeClass('active').children('.page-link')
+        .attr('onclick', `updateUserList(${paging.pageNum}, ${paging.size}, '${paging.sort}')`)
+        .text(`${paging.pageNum + 1}`);
+    paging.rightItem.removeClass('active').children('.page-link')
+        .attr('onclick', `updateUserList(${paging.pageNum + 1}, ${paging.size}, '${paging.sort}')`)
+        .text(`${paging.pageNum + 2}`);
+    paging.nextPage.removeClass('disabled').children('.page-link')
+        .attr('onclick', `updateUserList(${paging.pageNum}, ${paging.size}, '${paging.sort}')`);
+    paging.lastPage.removeClass('disabled').children('.page-link')
+        .attr('onclick', `updateUserList(${paging.lastPageIndex}, ${paging.size}, '${paging.sort}')`);
+
+    if (paging.totalPages < 3) {
+        paging.rightItem.hide();
+    }
+}
+
+function lastPageInit(paging) {
+    paging.firstPage.removeClass('disabled').children('.page-link')
+        .attr('onclick', `updateUserList(0, ${paging.size}, '${paging.sort}')`);
+    paging.prevPage.removeClass('disabled').children('.page-link')
+        .attr('onclick', `updateUserList(${paging.pageIndex - 1}, ${paging.size}, '${paging.sort}')`);
+    paging.leftItem.removeClass('active').children('.page-link')
+        .attr('onclick', `updateUserList(${paging.pageIndex - 2}, ${paging.size}, '${paging.sort}')`)
+        .text(`${paging.pageNum - 2}`);
+    paging.centerItem.removeClass('active').children('.page-link')
+        .attr('onclick', `updateUserList(${paging.pageIndex - 1}, ${paging.size}, '${paging.sort}')`)
+        .text(`${paging.pageNum - 1}`);
+    paging.rightItem.addClass('active').children('.page-link')
+        .removeAttr('onclick')
+        .text(`${paging.pageNum}`);
+    paging.nextPage.addClass('disabled').children('.page-link')
+        .removeAttr('onclick');
+    paging.lastPage.addClass('disabled').children('.page-link')
+        .removeAttr('onclick');
+
+    if (paging.totalPages < 3) {
+        paging.leftItem.hide();
+    }
+}
+
+function currentPageInit(paging) {
+    paging.firstPage.removeClass('disabled').children('.page-link')
+        .attr('onclick', `updateUserList(0, ${paging.size}, '${paging.sort}')`);
+    paging.prevPage.removeClass('disabled').children('.page-link')
+        .attr('onclick', `updateUserList(${paging.pageIndex - 1}, ${paging.size}, '${paging.sort}')`);
+    paging.leftItem.removeClass('active').children('.page-link')
+        .attr('onclick', `updateUserList(${paging.pageIndex - 1}, ${paging.size}, '${paging.sort}')`)
+        .text(`${paging.pageNum - 1}`);
+    paging.centerItem.addClass('active').children('.page-link')
+        .removeAttr('onclick')
+        .text(`${paging.pageNum}`);
+    paging.rightItem.removeClass('active').children('.page-link')
+        .attr('onclick', `updateUserList(${paging.pageIndex + 1}, ${paging.size}, '${paging.sort}')`)
+        .text(`${paging.pageNum + 1}`);
+    paging.nextPage.removeClass('disabled').children('.page-link')
+        .attr('onclick', `updateUserList(${paging.pageIndex + 1}, ${paging.size}, '${paging.sort}')`);
+    paging.lastPage.removeClass('disabled').children('.page-link')
+        .attr('onclick', `updateUserList(${paging.lastPageIndex}, ${paging.size}, '${paging.sort}')`);
 }
 
 function getRoleNames(roles) {
