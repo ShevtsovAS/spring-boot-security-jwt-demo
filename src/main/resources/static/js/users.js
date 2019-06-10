@@ -206,15 +206,15 @@ function getRoleNames(roles) {
 }
 
 function getUpdateButton(user) {
-    return $('<a class="btn btn-info btn-sm text-white update-user">Update</a>');
+    return $('<a class="btn btn-info btn-sm text-white update-user">').text('Update');
 }
 
 function getDeleteButton(user) {
-    return $('<a class="btn btn-danger btn-sm ml-1 text-white delete-user">Delete</a>');
+    return $('<a class="btn btn-danger btn-sm ml-1 text-white delete-user">').text('Delete');
 }
 
 function getActionButtons(user) {
-    return $('<td class="text-nowrap"></td>')
+    return $('<td class="text-nowrap">')
         .append(getUpdateButton(user))
         .append(getDeleteButton(user));
 }
