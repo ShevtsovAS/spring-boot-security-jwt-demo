@@ -19,6 +19,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.validation.Valid;
 import java.util.Set;
 
 import static com.spring.boot.security.jwt.example.demo.controller.UserControllerRest.USERS_API;
@@ -56,7 +57,7 @@ public class UserControllerRest {
     @LogExecutionTime
     @PostMapping("/roles")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<Role> createRole(@RequestBody CreateRoleRequest request) {
+    public ResponseEntity<Role> createRole(@Valid @RequestBody CreateRoleRequest request) {
         try {
             Role role = userService.createRole(request);
             return ResponseEntity.status(HttpStatus.CREATED).body(role);
@@ -68,7 +69,7 @@ public class UserControllerRest {
     @LogExecutionTime
     @PostMapping
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<User> createUser(@RequestBody SaveUserRequest request) {
+    public ResponseEntity<User> createUser(@Valid @RequestBody SaveUserRequest request) {
         try {
             User created = userService.create(request);
             created.setPassword(null);
@@ -160,7 +161,7 @@ public class UserControllerRest {
     @LogExecutionTime
     @ResponseStatus(HttpStatus.OK)
     @PatchMapping("/current/change-password")
-    public void changePassword(@RequestBody ChangePasswordRequest request,
+    public void changePassword(@Valid @RequestBody ChangePasswordRequest request,
                                Authentication authentication) {
         try {
             if (!StringUtils.equals(request.getNewPassword(), request.getNewPasswordForCheck())) {
