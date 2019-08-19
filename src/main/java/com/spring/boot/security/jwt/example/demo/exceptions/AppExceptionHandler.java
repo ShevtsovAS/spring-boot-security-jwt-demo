@@ -14,11 +14,12 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import java.time.LocalDateTime;
 
+import static org.springframework.http.HttpStatus.NOT_FOUND;
+
 @ControllerAdvice
 public class AppExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler({
-            UsernameNotFoundException.class,
             UserExistsException.class,
             RoleNotFoundException.class,
             RoleExistsException.class,
@@ -30,6 +31,16 @@ public class AppExceptionHandler extends ResponseEntityExceptionHandler {
                 .message(ex.getLocalizedMessage())
                 .build();
         return ResponseEntity.badRequest().body(errorMessage);
+    }
+
+    @ExceptionHandler({UsernameNotFoundException.class})
+    public ResponseEntity<Object> handleUsernameNotFoundException(Exception ex, WebRequest request) {
+        ErrorMessage errorMessage = ErrorMessage.builder()
+                .time(LocalDateTime.now())
+                .path(request.getDescription(false))
+                .message(ex.getLocalizedMessage())
+                .build();
+        return ResponseEntity.status(NOT_FOUND).body(errorMessage);
     }
 
 }

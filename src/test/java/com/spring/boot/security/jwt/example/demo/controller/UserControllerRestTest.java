@@ -295,7 +295,7 @@ public class UserControllerRestTest {
         mvc.perform(put(USERS_API + "/notExistUser/roles")
                 .contentType(APPLICATION_JSON)
                 .content(mapper.writeValueAsString(Collections.singleton("ROLE_USER"))))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -333,7 +333,7 @@ public class UserControllerRestTest {
     public void deactivateUserBadRequest() throws Exception {
         mvc.perform(put(USERS_API + "/notExistUser/deactivate")
                 .contentType(APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -360,7 +360,7 @@ public class UserControllerRestTest {
     public void activateUserBadRequest() throws Exception {
         mvc.perform(put(USERS_API + "/notExistUser/activate")
                 .contentType(APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -381,7 +381,7 @@ public class UserControllerRestTest {
     @WithMockUser(authorities = "ROLE_ADMIN")
     public void deleteUserBadRequest() throws Exception {
         mvc.perform(delete(USERS_API + "/notExistUser"))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isNotFound());
     }
 
     @Test
