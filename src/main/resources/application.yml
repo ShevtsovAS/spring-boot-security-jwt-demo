@@ -51,6 +51,7 @@ spring:
       expiration-time: 24 #hours
       token-prefix: 'Token '
       header-string: Authorization
+      login-path: /users/login
 ---
 spring:
   profiles: ssl

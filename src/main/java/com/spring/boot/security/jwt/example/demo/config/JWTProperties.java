@@ -14,4 +14,5 @@ public class JWTProperties {
     private long expirationTime;
     private String tokenPrefix;
     private String headerString;
+    private String loginPath;
 }
