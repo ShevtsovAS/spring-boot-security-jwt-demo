@@ -138,7 +138,7 @@ public class UserControllerRestTest {
                 .password(TEST_USER_PASSWORD)
                 .build();
 
-        mvc.perform(post("/login")
+        mvc.perform(post("/users/login")
                 .contentType(APPLICATION_JSON)
                 .content(mapper.writeValueAsString(user)))
                 .andExpect(status().isOk())
@@ -152,7 +152,7 @@ public class UserControllerRestTest {
                 .password("wrongPassword")
                 .build();
 
-        mvc.perform(post("/login")
+        mvc.perform(post("/users/login")
                 .contentType(APPLICATION_JSON)
                 .content(mapper.writeValueAsString(user)))
                 .andExpect(status().isUnauthorized())
@@ -166,7 +166,7 @@ public class UserControllerRestTest {
                 .password("password")
                 .build();
 
-        mvc.perform(post("/login")
+        mvc.perform(post("/users/login")
                 .contentType(APPLICATION_JSON)
                 .content(mapper.writeValueAsString(user)))
                 .andExpect(status().isUnauthorized())
