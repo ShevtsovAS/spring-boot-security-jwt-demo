@@ -45,7 +45,6 @@ public class UserControllerRest {
 
     @LogExecutionTime
     @GetMapping("/{username}")
-//    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Secured("ROLE_ADMIN")
     public ResponseEntity<User> findUser(@PathVariable String username) {
         User user = userService.findUser(username);
@@ -55,7 +54,6 @@ public class UserControllerRest {
 
     @LogExecutionTime
     @PostMapping("/roles")
-//    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Secured("ROLE_ADMIN")
     public ResponseEntity<Role> createRole(@Valid @RequestBody CreateRoleRequest request) {
         return ResponseEntity
@@ -65,7 +63,6 @@ public class UserControllerRest {
 
     @LogExecutionTime
     @PostMapping
-//    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Secured("ROLE_ADMIN")
     public ResponseEntity<User> createUser(@Valid @RequestBody SaveUserRequest request) {
         User created = userService.create(request);
@@ -75,7 +72,6 @@ public class UserControllerRest {
 
     @LogExecutionTime
     @PutMapping("/{userId}")
-//    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Secured("ROLE_ADMIN")
     public ResponseEntity<User> updateUser(@PathVariable Long userId,
                                            @RequestBody SaveUserRequest saveUserRequest) {
@@ -87,7 +83,6 @@ public class UserControllerRest {
 
     @LogExecutionTime
     @PutMapping("/{username}/roles")
-//    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Secured("ROLE_ADMIN")
     public ResponseEntity<User> updateUserRoles(@PathVariable String username,
                                                 @RequestBody Set<String> roleNames) {
@@ -98,7 +93,6 @@ public class UserControllerRest {
 
     @LogExecutionTime
     @PutMapping("/{username}/deactivate")
-//    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Secured("ROLE_ADMIN")
     public ResponseEntity<User> deactivateUser(@PathVariable String username) {
         User user = userService.deactivate(username);
@@ -108,7 +102,6 @@ public class UserControllerRest {
 
     @LogExecutionTime
     @PutMapping("/{username}/activate")
-//    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Secured("ROLE_ADMIN")
     public ResponseEntity<User> activateUser(@PathVariable String username) {
         User user = userService.activate(username);
@@ -119,7 +112,6 @@ public class UserControllerRest {
     @LogExecutionTime
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{username}")
-//    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Secured("ROLE_ADMIN")
     public void deleteUser(@PathVariable String username) {
         userService.delete(username);
