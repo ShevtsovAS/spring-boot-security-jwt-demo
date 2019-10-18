@@ -14,6 +14,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
@@ -25,8 +26,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
 
 import java.util.Collections;
 import java.util.Optional;
@@ -40,7 +39,6 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -48,6 +46,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringRunner.class)
 @ActiveProfiles("test,security,ssl")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@AutoConfigureMockMvc
 public class UserControllerRestTest {
 
     private static final String TEST_USER_NAME = "testUser";
@@ -106,20 +105,13 @@ public class UserControllerRestTest {
     PasswordEncoder bCryptPasswordEncoder;
 
     @Autowired
-    private WebApplicationContext context;
-
-    @Autowired
     private ObjectMapper mapper;
 
+    @Autowired
     private MockMvc mvc;
 
     @Before
     public void setup() {
-        mvc = MockMvcBuilders
-                .webAppContextSetup(context)
-                .apply(springSecurity())
-                .build();
-
         when(bCryptPasswordEncoder.encode(TEST_USER_TO_SAVE.getPassword())).thenReturn(TEST_CREATED_USER.getPassword());
         when(bCryptPasswordEncoder.encode(TEST_USER_NEW_PASSWORD)).thenReturn(TEST_USER_NEW_ENCODED_PASSWORD);
         when(bCryptPasswordEncoder.matches(TEST_USER_PASSWORD, TEST_USER.getPassword())).thenReturn(true);
