@@ -1,10 +1,17 @@
 spring:
   profiles:
-    active: develop,security,ssl
+    active: develop,security
   security:
     password:
       pattern: "^(?=.*[a-z]|[A-Z]|[а-я]|[А-я])(?=.*\\d)[A-Za-zа-яА-Я\\d-+%().,:;?!*<>@{}$#_/\\[\\]\\\\]{8,}"
       description: "Пароль должен содержать в себе минимум 8 символов, русские или латинские буквы и цифры"
+security:
+  oauth2:
+    resource:
+      token-info-uri: http://localhost:9191/oauth/check_token
+    client:
+      client-id: my-client-name
+      client-secret: qwerty123
 ---
 spring:
   profiles: develop
