@@ -119,7 +119,11 @@ public class UserControllerRest {
 
     @LogExecutionTime
     @GetMapping("/current")
+    @PreAuthorize("hasAuthority('read_profile')")
     public ResponseEntity<User> currentUser(Authentication authentication) {
+        if (authentication == null) {
+            return ResponseEntity.ok(User.builder().username("anonymous").build());
+        }
         User user = userService.findUser(authentication.getName());
         user.setPassword(null);
         return ResponseEntity.ok(user);
