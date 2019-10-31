@@ -1,6 +1,6 @@
 spring:
   profiles:
-    active: develop,security
+    active: develop
   security:
     password:
       pattern: "^(?=.*[a-z]|[A-Z]|[а-я]|[А-я])(?=.*\\d)[A-Za-zа-яА-Я\\d-+%().,:;?!*<>@{}$#_/\\[\\]\\\\]{8,}"
@@ -12,6 +12,13 @@ security:
     client:
       client-id: my-client-name
       client-secret: qwerty123
+      user-authorization-uri: http://localhost:9191/oauth/authorize
+      access-token-uri: http://localhost:9191/oauth/token
+server:
+  servlet:
+    session:
+      cookie:
+        name: KSESSION
 ---
 spring:
   profiles: develop
